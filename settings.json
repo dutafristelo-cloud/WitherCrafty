@@ -3,13 +3,13 @@
   "bot-account": {
     "username": "Withery",
     "password": "chalo178",
-    "type": "online"
+    "type": "offline"
   },
   "server": {
     "ip": "WITHER_CRAFTy.aternos.me",
     "port": 54319,
-    "version": "1.20.1",
-    "try-creative": false
+    "version": "",
+    "try-creative": true
   },
   "position": {
     "enabled": true,
