@@ -2,13 +2,13 @@
   "name": "AFK Bot",
   "bot-account": {
     "username": "Withery",
-    "password": "",
-    "type": "offline"
+    "password": "chalo178",
+    "type": "online"
   },
   "server": {
     "ip": "WITHER_CRAFTy.aternos.me",
     "port": 54319,
-    "version": "",
+    "version": "1.20.1",
     "try-creative": false
   },
   "position": {
