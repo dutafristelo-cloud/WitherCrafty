@@ -1398,51 +1398,70 @@ function initializeModules(bot, mcData, defaultMove) {
   addLog("[Modules] Initializing all modules...");
 
   // ---------- AUTO AUTH (REACTIVE) ----------
-  if (config.utils["auto-auth"] && config.utils["auto-auth"].enabled) {
-    const password = config.utils["auto-auth"].password;
-    let authHandled = false;
+ // ---------- AUTO AUTH (REACTIVE) ----------
+if (config.utils["auto-auth"] && config.utils["auto-auth"].enabled) {
+  const password = config.utils["auto-auth"].password;
+  let authHandled = false;
 
-    const tryAuth = (type) => {
-      if (authHandled || !bot || !botState.connected) return;
+  const tryAuth = (type) => {
+    if (authHandled || !bot || !botState.connected) return;
+
+    if (type === "register") {
+      bot.chat(`/register ${password} ${password}`);
+      addLog("[Auth] Detected register prompt - sent /register");
       authHandled = true;
-      if (type === "register") {
-        bot.chat(`/register ${password} ${password}`);
-        addLog("[Auth] Detected register prompt - sent /register");
-      } else {
-        bot.chat(`/login ${password}`);
-        addLog("[Auth] Detected login prompt - sent /login");
-      }
-    };
+    } else if (type === "login") {
+      bot.chat(`/login ${password}`);
+      addLog("[Auth] Detected login prompt - sent /login");
+      authHandled = true;
+    }
+  };
 
-    bot.on("messagestr", (message) => {
-      if (authHandled) return;
-      const msg = message.toLowerCase();
-      if (
-        msg.includes("/register") ||
-        msg.includes("register ") ||
-        msg.includes("지정된 비밀번호")
-      ) {
-        tryAuth("register");
-      } else if (
-        msg.includes("/login") ||
-        msg.includes("login ") ||
-        msg.includes("로그인")
-      ) {
-        tryAuth("login");
-      }
-    });
+  bot.on("messagestr", (message) => {
+    if (authHandled) return;
 
-    // Failsafe: if no prompt after 10s, try login anyway
-    setTimeout(() => {
-      if (!authHandled && bot && botState.connected) {
-        addLog(
-          "[Auth] No prompt detected after 10s, sending /login as failsafe",
-        );
-        bot.chat(`/login ${password}`);
-        authHandled = true;
-      }
-    }, 10000);
-  }
+    const msg = message.toLowerCase();
+    addLog(`[AuthDebug] Message: ${msg}`);
+
+    // REGISTER
+    if (
+      msg.includes("/register") ||
+      msg.includes("register ") ||
+      msg.includes("регистрац") ||
+      msg.includes("зарегистр")
+    ) {
+      tryAuth("register");
+      return;
+    }
+
+    // LOGIN
+    if (
+      msg.includes("/login") ||
+      msg.includes("login ") ||
+      msg.includes("авторизац") ||
+      msg.includes("войдите") ||
+      msg.includes("вход")
+    ) {
+      tryAuth("login");
+      return;
+    }
+  });
+
+  // Failsafe
+  setTimeout(() => {
+    if (!authHandled && bot && botState.connected) {
+      addLog("[Auth] No prompt detected after 5s, trying /login first");
+      bot.chat(`/login ${password}`);
+
+      setTimeout(() => {
+        if (!authHandled && bot && botState.connected) {
+          addLog("[Auth] Login fallback failed, trying /register");
+          bot.chat(`/register ${password} ${password}`);
+        }
+      }, 3000);
+    }
+  }, 5000);
+}
 
   // ---------- CHAT MESSAGES ----------
   if (config.utils["chat-messages"] && config.utils["chat-messages"].enabled) {
